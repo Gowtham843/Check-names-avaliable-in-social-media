@@ -176,7 +176,7 @@ async function process() {
   document.querySelectorAll(".platform:checked").forEach(el=> platforms.push(el.value));
   if (!platforms.length) return alert("Select at least one platform!");
 
-  const res = await fetch("https://<your-vercel-app>.vercel.app/api/check", {
+  const res = await fetch("https://check-names-avaliable-in-social-med.vercel.app/api/check", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ names })
