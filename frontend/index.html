@@ -5,7 +5,255 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Social Handle Checker</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #fff;
+      --accent: #176be0;
+      --muted: #666;
+      --success: #0b8a3e;
+      --danger: #d23f3f;
+      --maxwidth: 1100px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: #222;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background: linear-gradient(90deg, #ffffff, #f1f6ff);
+      border-bottom: 1px solid #e6eefc;
+    }
+
+    .topbar .brand {
+      font-weight: 800;
+      color: var(--accent);
+      font-size: 18px;
+    }
+
+    .topbar .tag {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .container {
+      max-width: var(--maxwidth);
+      margin: 22px auto;
+      display: flex;
+      gap: 20px;
+      padding: 0 14px;
+    }
+
+    .panel {
+      flex: 1 1 auto;
+    }
+
+    h1 {
+      margin: 2px 0 4px;
+      font-size: 22px;
+    }
+
+    .desc {
+      color: var(--muted);
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid #eef5ff;
+      box-shadow: 0 8px 30px rgba(20, 40, 90, 0.03);
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    select,
+    input[type="file"],
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #dfe9ff;
+      border-radius: 6px;
+      font-family: inherit;
+      margin-bottom: 12px;
+    }
+
+    textarea {
+      resize: vertical;
+      font-size: 14px;
+    }
+
+    .file-controls .hint {
+      color: var(--muted);
+      margin-top: 6px;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .format-preview {
+      margin-top: 10px;
+      background: #0f1724;
+      color: #e6f0ff;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      overflow-x: auto;
+      font-family: monospace;
+      white-space: pre;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .platform-item {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      cursor: pointer;
+      padding: 4px 10px 4px 6px;
+      border-radius: 6px;
+      transition: background 0.15s ease;
+    }
+
+    .platform-item:hover {
+      background: rgba(23, 107, 224, 0.08);
+    }
+
+    .platform-item input {
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: 1px solid #dfe9ff;
+      background: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      box-shadow: 0 6px 18px rgba(23, 107, 224, 0.12);
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      filter: grayscale(.1);
+    }
+
+    .btn.loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .loader {
+      display: none;
+      width: 24px;
+      height: 24px;
+      border: 3px solid #e3e3e3;
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 540px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 600px;
+      margin-top: 6px;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eef4ff;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f8fbff;
+      font-weight: 700;
+      color: #222;
+      position: sticky;
+      top: 0;
+    }
+
+    .status-true {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .status-false {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 20px;
+      font-size: 13px;
+      margin-top: 18px;
+    }
+
+    /* responsive */
+    @media (max-width:980px) {
+      .container {
+        flex-direction: column;
+        padding: 0 12px;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -85,7 +333,7 @@
   </div>
 
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-  
+
   <script>
     const inputType = document.getElementById("inputType");
     const fileBox = document.getElementById("fileBox");
@@ -103,7 +351,7 @@
     inputType.addEventListener("change", () => {
 
       fileBox.style.display =
-        ["txt","csv","excel"].includes(inputType.value) ? "block" : "none";
+        ["txt", "csv", "excel"].includes(inputType.value) ? "block" : "none";
 
       panelBox.style.display =
         inputType.value === "panel" ? "block" : "none";
@@ -111,7 +359,7 @@
       // TXT preview
       if (inputType.value === "txt") {
         preview.textContent =
-`Codexly
+          `Codexly
 Logiqo
 Thinkbit
 Codezeno`;
@@ -120,7 +368,7 @@ Codezeno`;
       // CSV preview
       else if (inputType.value === "csv") {
         preview.textContent =
-`name
+          `name
 Codexly
 Logiqo
 Thinkbit
@@ -163,7 +411,7 @@ Codezeno`;
 
         const platforms = [...document.querySelectorAll(".platform-item input:checked")]
           .map(p => p.value);
-        
+
         if (!platforms.length) {
           reset("Select at least one platform");
           return;
