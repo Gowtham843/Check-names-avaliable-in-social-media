@@ -1,6 +1,4 @@
-// api/check.js
-import fetch from "node-fetch";
-
+// Vercel Serverless Function - Uses native fetch (Node 18+)
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -28,13 +26,18 @@ export default async function handler(req, res) {
 
   async function checkExists(url) {
     try {
-      const r = await fetch(url, { 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch(url, { 
         headers,
         redirect: 'follow',
-        timeout: 5000
+        signal: controller.signal
       });
-      return r.status === 200;
-    } catch {
+      
+      clearTimeout(timeoutId);
+      return response.status === 200;
+    } catch (error) {
       return false;
     }
   }
