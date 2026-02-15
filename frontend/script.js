@@ -70,12 +70,18 @@ async function checkHandles() {
 
     const platforms = [...document.querySelectorAll(".platform-item input:checked")]
       .map(p => p.value);
+    
+    if (!platforms.length) return reset("Select at least one platform");
 
     const res = await fetch("/api/check", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ names })
     });
+
+    if (!res.ok) {
+      throw new Error(`Server error: ${res.status}`);
+    }
 
     const data = await res.json();
 
@@ -107,7 +113,10 @@ async function collectNames() {
 
   if (inputType.value === "csv") {
     const txt = await file.text();
-    return txt.split(/\r?\n/).map(r => r.split(",")[0]).filter(n => n.trim());
+    const lines = txt.split(/\r?\n/).filter(n => n.trim());
+    // Skip header if first line looks like a header
+    const start = lines[0] && lines[0].toLowerCase().includes('name') ? 1 : 0;
+    return lines.slice(start).map(r => r.split(",")[0]).filter(n => n.trim());
   }
 
   if (inputType.value === "excel") {
@@ -115,7 +124,8 @@ async function collectNames() {
     const workbook = XLSX.read(buffer, { type: "array" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    return json.map(row => row[0]).filter(n => n);
+    // Skip header row (first row)
+    return json.slice(1).map(row => row[0]).filter(n => n);
   }
 
   return [];
@@ -132,14 +142,18 @@ function buildTable(data, platforms) {
 
   let html = "<table><tr><th>Name</th>";
 
-  platforms.forEach(p => html += `<th>${p}</th>`);
+  platforms.forEach(p => {
+    const displayName = p.charAt(0).toUpperCase() + p.slice(1);
+    html += `<th>${displayName}</th>`;
+  });
 
   html += "</tr>";
 
   data.forEach(row => {
     html += `<tr><td>${row.name}</td>`;
     platforms.forEach(p => {
-      html += `<td class="${row[p] ? "true" : "false"}">${row[p]}</td>`;
+      const available = row[p];
+      html += `<td class="status-${available ? "true" : "false"}">${available ? "✓ Available" : "✗ Taken"}</td>`;
     });
     html += "</tr>";
   });
