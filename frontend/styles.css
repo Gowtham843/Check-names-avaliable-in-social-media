@@ -82,6 +82,8 @@ body {
     line-height: 1.4;
 }
 
+
+
 .close-btn {
     position: absolute;
     right: 8px;
@@ -133,18 +135,6 @@ input[type="file"] {
     font-size: 13px;
 }
 
-.platform-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 8px;
-}
-
-.platform-list label {
-    font-weight: 500;
-    color: #333;
-    font-size: 14px
-}
 
 .actions {
     display: flex;
@@ -179,6 +169,23 @@ input[type="file"] {
     color: var(--muted);
     font-weight: 600;
     display: inline-block;
+}
+
+.platform-item {
+    display: flex;
+    gap: 6px;
+    cursor: pointer;
+    padding: 4px 10px 1px 6px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+
+.platform-item:hover {
+    background: rgba(23, 107, 224, 0.08);
+}
+
+.platform-item input {
+    cursor: pointer;
 }
 
 .dots::after {
@@ -289,6 +296,8 @@ button.loading {
     opacity: 0.6;
     pointer-events: none;
 }
+
+
 
 .format-preview {
     margin-top: 10px;

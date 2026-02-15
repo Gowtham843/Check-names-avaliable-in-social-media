@@ -30,10 +30,6 @@
       border: 1px solid #e0e0e0;
     }
 
-    label {
-      font-weight: bold;
-    }
-
     input,
     select,
     button {
@@ -102,6 +98,7 @@
       text-align: right;
     }
   </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -134,13 +131,32 @@
 
     <div class="section">
       <label>Select Platforms to Check</label>
+
       <div class="radio-group">
-        <div><input type="checkbox" class="platform" value="instagram" checked> Instagram</div>
-        <div><input type="checkbox" class="platform" value="youtube" checked> YouTube</div>
-        <div><input type="checkbox" class="platform" value="x" checked> X (Twitter)</div>
-        <div><input type="checkbox" class="platform" value="linkedin" checked> LinkedIn</div>
+
+        <label class="platform-item">
+          <input type="checkbox" class="platform" value="instagram" checked>
+          <span>Instagram</span>
+        </label>
+
+        <label class="platform-item">
+          <input type="checkbox" class="platform" value="youtube" checked>
+          <span>YouTube</span>
+        </label>
+
+        <label class="platform-item">
+          <input type="checkbox" class="platform" value="x" checked>
+          <span>X (Twitter)</span>
+        </label>
+
+        <label class="platform-item">
+          <input type="checkbox" class="platform" value="linkedin" checked>
+          <span>LinkedIn</span>
+        </label>
+
       </div>
     </div>
+
 
     <button id="checkBtn" onclick="process()">Check Handles</button>
     <div id="loader" class="loader"></div>
@@ -190,12 +206,12 @@ Codezeno`;
       }
       else if (type === "excel") {
         box.style.display = "block";
-        content.textContent =
-          `Name
-Codexly
-Logiqo
-Thinkbit
-Codezeno`;
+        content.innerHTML =
+          `<table><th>Name</th>
+<td>Codexly</td>
+<td>Logiqo</td>
+<td>Thinkbit</td>
+<td>Codezeno</td></table>`;
       }
       else {
         box.style.display = "none";
