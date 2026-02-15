@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   async function checkAvailable(url, platform) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
       
       const response = await fetch(url, { 
         headers,
@@ -37,14 +37,21 @@ export default async function handler(req, res) {
       
       clearTimeout(timeoutId);
       
-      // For Instagram, check the response body for "page isn't available"
+      // For Instagram, check the response body
       if (platform === 'instagram') {
         const text = await response.text();
         
-        // If page contains these phrases, username is available
-        if (text.includes("isn't available") || 
-            text.includes("page may have been removed") ||
-            text.includes("Sorry, this page")) {
+        // Remove all HTML tags and extra spaces for clean text matching
+        const cleanText = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').toLowerCase();
+        
+        // Check for error messages (username is available)
+        if (cleanText.includes("sorry") && cleanText.includes("page") && cleanText.includes("available")) {
+          return true;
+        }
+        
+        if (cleanText.includes("page not found") || 
+            cleanText.includes("user not found") ||
+            cleanText.includes("page may have been removed")) {
           return true;
         }
         
@@ -53,7 +60,15 @@ export default async function handler(req, res) {
           return true;
         }
         
-        // Otherwise, it's taken
+        // Check if profile data exists (taken)
+        if (cleanText.includes("followers") || 
+            cleanText.includes("following") ||
+            text.includes('"is_private"') ||
+            text.includes('"edge_followed_by"')) {
+          return false;
+        }
+        
+        // Default to taken if unsure
         return false;
       }
       
