@@ -4,74 +4,84 @@
 <head>
   <meta charset="UTF-8">
   <title>Social Handle Checker</title>
+
   <style>
     body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      padding: 20px;
+      font-family: Segoe UI, Arial;
       background: #fafafa;
-      color: #222;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 5px;
-    }
-
-    p {
-      text-align: center;
-      color: #555;
+      padding: 20px;
     }
 
     .section {
-      margin: 20px 0;
-      padding: 15px;
       background: #fff;
+      padding: 16px;
       border-radius: 8px;
-      border: 1px solid #e0e0e0;
+      margin: 18px 0;
+      border: 1px solid #ddd;
     }
 
     input,
     select,
+    textarea,
     button {
-      margin-top: 6px;
-      margin-bottom: 12px;
-      padding: 8px;
       width: 100%;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 14px;
+      padding: 8px;
+      margin: 6px 0 12px;
     }
 
     button {
-      cursor: pointer;
-      background: #007bff;
-      color: #fff;
+      background: #176be0;
+      color: white;
+      border: none;
       font-weight: bold;
-      transition: .3s;
+      cursor: pointer;
     }
 
-    button:hover {
-      background: #0056d2;
+    button:disabled {
+      opacity: .6
     }
 
     .radio-group {
       display: flex;
       gap: 12px;
-      margin: 10px 0;
+      flex-wrap: wrap;
     }
 
-    .radio-group input {
-      width: auto;
+    .platform-item {
+      display: flex;
+      gap: 6px;
+      cursor: pointer;
     }
 
-    #panelNames {
+    .format-preview {
+      background: #0f1724;
+      color: #e6f0ff;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .loader {
       display: none;
+      width: 28px;
+      height: 28px;
+      border: 4px solid #ddd;
+      border-top: 4px solid #176be0;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
     }
 
     table {
-      border-collapse: collapse;
       width: 100%;
-      margin-top: 15px;
+      border-collapse: collapse;
+      margin-top: 12px;
     }
 
     th,
@@ -81,230 +91,61 @@
       text-align: center;
     }
 
-    th {
-      background: #eee;
-    }
-
     .true {
       color: green;
+      font-weight: bold
     }
 
     .false {
       color: red;
-    }
-
-    .filters {
-      margin-top: 14px;
-      text-align: right;
+      font-weight: bold
     }
   </style>
-  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
   <h1>Social Handle Availability Checker</h1>
-  <p>Upload names or enter manually → select platforms → get results.</p>
 
   <div class="section">
-    <label>Select Input Type</label>
-    <select id="inputType" onchange="onInputTypeChange()">
-      <option value="">-- Select --</option>
-      <option value="txt">TXT (one name per line)</option>
+
+    <select id="inputType">
+      <option value="">Select Input</option>
+      <option value="txt">TXT File</option>
+      <option value="csv">CSV File</option>
       <option value="excel">Excel (.xlsx)</option>
-      <option value="panel">Manual Entry Panel</option>
+      <option value="panel">Manual Entry</option>
     </select>
 
-    <div id="fileUpload">
-      <input type="file" id="fileInput" />
 
-      <div id="formatPreview" class="format-preview" style="display:none;">
-        <strong>Example format</strong>
-        <pre id="previewContent"></pre>
-      </div>
+    <div id="fileBox" style="display:none;">
+      <input type="file" id="fileInput" accept=".txt,.csv,.xlsx">
+      <div id="preview" class="format-preview"></div>
     </div>
 
-    <div id="panelNames">
-      <label>Enter Names (one per line)</label>
-      <textarea id="textList" rows="6" style="width:100%;"></textarea>
+    <div id="panelBox" style="display:none;">
+      <textarea id="textInput" rows="6"></textarea>
     </div>
 
-    <div class="section">
-      <label>Select Platforms to Check</label>
-
-      <div class="radio-group">
-
-        <label class="platform-item">
-          <input type="checkbox" class="platform" value="instagram" checked>
-          <span>Instagram</span>
-        </label>
-
-        <label class="platform-item">
-          <input type="checkbox" class="platform" value="youtube" checked>
-          <span>YouTube</span>
-        </label>
-
-        <label class="platform-item">
-          <input type="checkbox" class="platform" value="x" checked>
-          <span>X (Twitter)</span>
-        </label>
-
-        <label class="platform-item">
-          <input type="checkbox" class="platform" value="linkedin" checked>
-          <span>LinkedIn</span>
-        </label>
-
-      </div>
+    <div class="radio-group">
+      <label class="platform-item"><input type="checkbox" value="instagram" checked>Instagram</label>
+      <label class="platform-item"><input type="checkbox" value="youtube" checked>YouTube</label>
+      <label class="platform-item"><input type="checkbox" value="x" checked>X</label>
+      <label class="platform-item"><input type="checkbox" value="linkedin" checked>LinkedIn</label>
     </div>
 
-
-    <button id="checkBtn" onclick="process()">Check Handles</button>
-    <div id="loader" class="loader"></div>
+    <button id="submitBtn">Check Handles</button>
+    <div class="loader" id="loader"></div>
 
   </div>
 
-
-  <div class="filters">
-    <label>Show:</label>
-    <select id="filterSelect" onchange="applyFilter()">
-      <option value="all">All results</option>
-      <option value="available-any">Available on any</option>
-      <option value="instagram-only">Only Instagram available</option>
-      <option value="youtube-only">Only YouTube available</option>
-      <option value="x-only">Only X available</option>
-      <option value="linkedin-only">Only LinkedIn available</option>
-    </select>
+  <div class="section" id="resultSection" style="display:none;">
+    <div id="resultTable"></div>
   </div>
 
-  <div id="output"></div>
-<script src="app.js"></script>
-  <script>
-    function onInputTypeChange() {
-      const type = document.getElementById("inputType").value;
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
 
-      document.getElementById("fileUpload").style.display =
-        (type === "txt" || type === "excel") ? "block" : "none";
-
-      document.getElementById("panelNames").style.display =
-        (type === "panel") ? "block" : "none";
-
-      updateFormatPreview(type);
-    }
-
-
-    function updateFormatPreview(type) {
-      const box = document.getElementById("formatPreview");
-      const content = document.getElementById("previewContent");
-
-      if (type === "txt") {
-        box.style.display = "block";
-        content.textContent =
-          `Codexly
-Logiqo
-Thinkbit
-Codezeno`;
-      }
-      else if (type === "excel") {
-        box.style.display = "block";
-        content.innerHTML =
-          `<table><th>Name</th>
-<td>Codexly</td>
-<td>Logiqo</td>
-<td>Thinkbit</td>
-<td>Codezeno</td></table>`;
-      }
-      else {
-        box.style.display = "none";
-      }
-    }
-
-
-    async function process() {
-      if (window.isChecking) return; // hard block multi-click
-      window.isChecking = true;
-
-      const btn = document.getElementById("checkBtn");
-      const loader = document.getElementById("loader");
-
-      btn.classList.add("loading");
-      btn.disabled = true;
-      loader.style.display = "inline-block";
-
-      try {
-        let names = getNamesSomehow(); // keep your existing logic here
-
-        const res = await fetch("/api/check", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ names })
-        });
-
-        const data = await res.json();
-        showTable(data.results);
-
-        document.getElementById("output")
-          .scrollIntoView({ behavior: "smooth" });
-
-      } catch (err) {
-        alert("Something went wrong");
-        console.error(err);
-      }
-
-      loader.style.display = "none";
-      btn.disabled = false;
-      btn.classList.remove("loading");
-      window.isChecking = false;
-    }
-
-
-
-    function showTable(data) {
-      const selectedPlatforms = Array.from(
-        document.querySelectorAll(".platform:checked")
-      ).map(p => p.value);
-
-      // Always include Name column
-      let headers = `<th>Name</th>`;
-      selectedPlatforms.forEach(p => {
-        headers += `<th>${capitalize(p)}</th>`;
-      });
-
-      let rows = "";
-
-      data.forEach(r => {
-        let row = `<td>${r.name}</td>`;
-
-        selectedPlatforms.forEach(p => {
-          const val = r[p];
-          row += `<td class="${val ? "true" : "false"}">${val}</td>`;
-        });
-
-        rows += `<tr>${row}</tr>`;
-      });
-
-      document.getElementById("output").innerHTML = `
-    <table>
-      <tr>${headers}</tr>
-      ${rows}
-    </table>
-  `;
-    }
-
-
-    function applyFilter() {
-      const filter = document.getElementById("filterSelect").value;
-      const filtered = window.latestResults.filter(r => {
-        if (filter === "all") return true;
-        if (filter === "available-any") return (r.instagram || r.youtube || r.x || r.linkedin);
-        if (filter === "instagram-only") return r.instagram && !r.youtube && !r.x && !r.linkedin;
-        if (filter === "youtube-only") return r.youtube && !r.instagram && !r.x && !r.linkedin;
-        if (filter === "x-only") return r.x && !r.instagram && !r.youtube && !r.linkedin;
-        if (filter === "linkedin-only") return r.linkedin && !r.instagram && !r.youtube && !r.x;
-        return true;
-      });
-      showTable(filtered);
-    }
-  </script>
 
 </body>
 
