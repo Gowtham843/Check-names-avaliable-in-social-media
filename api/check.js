@@ -1,37 +1,62 @@
+// api/check.js
 import fetch from "node-fetch";
 
 export default async function handler(req, res) {
+  // Enable CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST") {
-    return res.status(400).json({ error: "POST only" });
+    return res.status(405).json({ error: "Method not allowed - POST only" });
   }
 
   const { names } = req.body || {};
-  if (!names || !Array.isArray(names)) {
-    return res.status(400).json({ error: "Send names array" });
+  
+  if (!names || !Array.isArray(names) || names.length === 0) {
+    return res.status(400).json({ error: "Send valid names array" });
   }
 
   const headers = {
-    "User-Agent": "Mozilla/5.0"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
   };
 
-  async function exists(url) {
+  async function checkExists(url) {
     try {
-      const r = await fetch(url, { headers });
+      const r = await fetch(url, { 
+        headers,
+        redirect: 'follow',
+        timeout: 5000
+      });
       return r.status === 200;
     } catch {
       return false;
     }
   }
 
-  const results = await Promise.all(
-    names.map(async (name) => ({
-      name,
-      instagram: await exists(`https://www.instagram.com/${name}/`),
-      youtube: await exists(`https://www.youtube.com/@${name}`),
-      x: await exists(`https://x.com/${name}`),
-      linkedin: await exists(`https://www.linkedin.com/in/${name}/`)
-    }))
-  );
+  try {
+    const results = await Promise.all(
+      names.map(async (name) => {
+        const cleanName = name.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+        
+        return {
+          name: name.trim(),
+          instagram: await checkExists(`https://www.instagram.com/${cleanName}/`),
+          youtube: await checkExists(`https://www.youtube.com/@${cleanName}`),
+          x: await checkExists(`https://x.com/${cleanName}`),
+          linkedin: await checkExists(`https://www.linkedin.com/in/${cleanName}/`)
+        };
+      })
+    );
 
-  return res.status(200).json({ results });
+    return res.status(200).json({ results });
+  } catch (error) {
+    console.error('Error checking handles:', error);
+    return res.status(500).json({ error: "Failed to check handles" });
+  }
 }
